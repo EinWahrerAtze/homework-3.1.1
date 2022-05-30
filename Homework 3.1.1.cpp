@@ -146,8 +146,6 @@ int main()
 
 	std::cout << "Arrays created: " << fsize / 2 << ";" << std::endl;
 
-	int temp = 0;
-
 	for (int i = 0; i < fsize / 2; ++i)
 	{
 		read_file(in_fname, &collection[i]);
