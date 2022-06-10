@@ -1,173 +1,132 @@
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <vector>
 
-struct Arrays
-{
-	int size = 0;
-	int* array = new int[size];
-};
-
-int check_data(std::string value)
-{
-	try 
-	{
-		return stoi(value);
-	}
-	catch (std::invalid_argument& value)
-	{
-		std::cout << value.what() << std::endl;
-		std::cout << "Check the initial .txt file!\n";
-	}
-	catch (std::out_of_range& value)
-	{
-		std::cout << value.what() << std::endl;
-		std::cout << "Check the initial .txt file!\n";
-	}
-}
-
-int file_size(std::string filename)
+void read_file(std::vector<int>* const arr, const char filename[])
 {
 	std::ifstream fin(filename);
 
 	if (fin.is_open())
 	{
-		int count = 0;
-		std::string temp;
+		int n = 0;
+		bool odd = false;
 
-		while (getline(fin, temp))
+		while (fin.good() && fin >> n)
 		{
-			++count;
+			if (!odd)
+			{
+				arr->insert(arr->begin(), n);
+
+				for (int i = 0; i < arr->front(); ++i)
+				{
+					fin >> n;
+					i == 0 ? arr->insert(arr->begin() + 1, n) : arr->insert(arr->begin() + i, n);
+				}
+
+				odd = true;
+			}
+			else
+			{
+				arr->insert(arr->begin(), n);
+
+				for (int i = 0; i < arr->front(); ++i)
+				{
+					fin >> n;
+					i == arr->front() - 1 ? arr->insert(arr->begin() + 1, n) : arr->insert(arr->begin() + 1 + i, n);
+				}
+
+				odd = false;
+			}
 		}
-		if (count == 0)
-		{
-			std::cout << "No data processed. File \"" << filename << "\" is empty.\n";
-			exit(EXIT_FAILURE);
-		}
+
 		if (fin.eof())
 		{
-			std::cout << "End of file reached;\n";
-			std::cout << "Lines read: " << count << ";" << std::endl;
-		} 
+			std::cout << "End of file reached.\n";
+		}
+		else if (fin.fail())
+		{
+			std::cout << "Input terminated by data mismatch.\n";
+		}
 		else
 		{
 			std::cout << "Input terminated for unknown reason.\n";
-			exit(EXIT_FAILURE);
+		}
+
+		if (arr->begin() == arr->end())
+		{
+			std::cout << "No data to processed. File is empty.\n";
+		}
+		else
+		{
+			std::cout << "Characters read: " << arr->size() << ".\n";
 		}
 
 		fin.close();
-		return count;
 	}
 	else
 	{
-		std::cout << "Could not open \"" << filename << "\";" << std::endl;
+		std::cout << "Could not open file \"" << filename << "\".\n";
 		std::cout << "Program terminating.\n";
 		exit(EXIT_FAILURE);
 	}
 }
 
-void read_file(std::string filename, Arrays* arr)
+void write_file(const std::vector<int>* const arr, const char filename[])
 {
-	std::ifstream fin(filename);
-
-	if (fin.is_open())
-	{
-		static int fptr = 0;
-		fin.seekg(fptr);
-		std::string temp;
-
-		fin >> temp;
-		arr->size = check_data(temp);
-
-		if (arr->size < 0) arr->size = -arr->size;
-
-		arr->array = new int[arr->size]();
-
-		static int count = 0;
-
-		if ((count & 1) == 0) // even
-		{
-			for (int i = 0; i < arr->size; ++i)
-			{
-				fin >> temp;
-				i == 0 ? *(arr->array + arr->size - 1) = check_data(temp) : *(arr->array + i - 1) = check_data(temp);
-			}
-		}
-		else // odd
-		{
-			for (int i = 0; i < arr->size; ++i)
-			{
-				fin >> temp;
-				i == arr->size - 1? *(arr->array + 0) = check_data(temp) : *(arr->array + i + 1) = check_data(temp);
-			}
-		}
-
-		++count;
-		fptr = static_cast<int>(fin.tellg());
-		fin.close();
-	}
-	else
-	{
-		std::cout << "Could not open \"" << filename << "\";" << std::endl;
-		std::cout << "Program terminating.\n";
-		exit(EXIT_FAILURE);
-	}
-}
-
-void write_file(std::string filename, const Arrays* const arr)
-{
-	std::ofstream fout(filename, std::ios_base::out | std::ios_base::app);
+	std::ofstream fout(filename);
 
 	if (fout.is_open())
 	{
-		fout << arr->size << std::endl;
 
-		for (int i = 0; i < arr->size; ++i)
+		int mark = 0;
+
+		for (int i = 0; i < arr->size(); ++i)
 		{
-			fout << arr->array[i] << (i == arr->size - 1 ? "\n" : " ");
+			if (i == mark)
+			{
+				fout << arr->at(i) << "\n";
+				mark += arr->at(i) + 1;
+			}
+			else
+			{
+				fout << arr->at(i) << (i == mark - 1 ? "\n" : " ");
+			}
 		}
 
+		std::cout << "Output data successfully written in \"" << filename << "\" file.\n";
 		fout.close();
 	}
 	else
 	{
-		std::cout << "Could not open \"" << filename << "\" file for output.\n";
+		std::cout << "Could not open file \"" << filename << "\" for output.\n";
+		std::cout << "Program terminating.\n";
 		exit(EXIT_FAILURE);
 	}
 }
 
 int main()
 {
-	std::string in_fname = "in.txt";
-	std::string out_fname = "out.txt";
+	char in_filename[] = "in.txt";
+	char out_filename[] = "out.txt";
+	std::vector<int> arr;
 
-	int fsize = file_size(in_fname);
-	Arrays* collection = new Arrays[fsize / 2];
+	read_file(&arr, in_filename);
 
-	std::cout << "Arrays created: " << fsize / 2 << ";" << std::endl;
+	int mark = 0;
 
-	for (int i = 0; i < fsize / 2; ++i)
+	for (int i = 0; i < arr.size(); ++i)
 	{
-		read_file(in_fname, &collection[i]);
-	}
-
-	for (int i = 0; i < fsize / 2; ++i)
-	{
-		std::cout << "[" << (collection + i)->size << "] \t";
-				
-		for (int j = 0; j < (collection + i)->size; ++j)
+		if (i == mark)
 		{
-			std::cout << (collection + i)->array[j] << (j == (collection + i)->size - 1 ? "\n" : " ");
+			std::cout << "[" << arr.at(i) << "]" << "\t";
+			mark += arr.at(i) + 1;
+		}
+		else
+		{
+			std::cout << arr.at(i) << (i == mark - 1? "\n" : " ");
 		}
 	}
 
-	for (int i = fsize / 2 - 1; i >= 0; --i)
-	{
-		write_file(out_fname, &collection[i]);
-	}
-
-	std::cout << "Output data written in \"" << out_fname << "\" file in the project folder.\n";
-
-	delete[] collection;
+	write_file(&arr, out_filename);
 	return 0;
 }
