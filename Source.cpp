@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-void show_array(const int* array, const int size)
+void show_array(const int *array, const int size)
 {
 	std::cout << size << std::endl;
 
@@ -27,19 +27,19 @@ int main()
 	fin >> first_size;
 	++count;
 
-	int* first_array = new int[first_size]();
+	int *first_array = new int[first_size]();
 
 	for (int i = 0; i < first_size; ++i)
 	{
 		i == 0 ? fin >> first_array[first_size - 1] : fin >> first_array[i - 1];
 		++count;
 	}
-	
+
 	int second_size = 0;
 	fin >> second_size;
 	++count;
 
-	int* second_array = new int[second_size]();
+	int *second_array = new int[second_size]();
 
 	for (int i = 0; i < second_size; ++i)
 	{
@@ -82,13 +82,6 @@ int main()
 		std::cout << "Could not open file \"" << out_filename << "\" for output.\n";
 	}
 
-	fout << first_size << "\n";
-
-	for (int i = 0; i < first_size; ++i)
-	{
-		fout << first_array[i] << (i == first_size - 1 ? "\n" : " ");
-	}
-
 	fout << second_size << "\n";
 
 	for (int i = 0; i < second_size; ++i)
@@ -96,8 +89,18 @@ int main()
 		fout << second_array[i] << (i == second_size - 1 ? "\n" : " ");
 	}
 
-	std::cout << "Data successfully written in \"" << out_filename << "\" file.\n";
+	fout << first_size << "\n";
+
+	for (int i = 0; i < first_size; ++i)
+	{
+		fout << first_array[i] << (i == first_size - 1 ? "\n" : " ");
+	}
+
+	std::cout << "\nData successfully written in \"" << out_filename << "\" file.\n";
 
 	fout.close();
+
+	delete[] first_array;
+	delete[] second_array;
 	return 0;
 }
